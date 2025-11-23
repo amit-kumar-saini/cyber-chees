@@ -2,7 +2,6 @@
   "appId": "com.cyber.chess",
   "appName": "cyber-chess",
   "webDir": "dist",
-  
   "plugins": {
     "AdMob": {
       "appId": "ca-app-pub-3940256099942544~3347511713",
