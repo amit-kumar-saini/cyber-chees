@@ -1,0 +1,15 @@
+{
+	"appId": "cyber.chess.app",
+	"appName": "cyber-chess",
+	"webDir": "dist",
+	"server": {
+		"url": "https://7fc85e4f-5d58-4b79-a854-f593310c1b49.lovableproject.com?forceHideBadge=true",
+		"cleartext": true
+	},
+	"plugins": {
+		"AdMob": {
+			"appId": "ca-app-pub-3940256099942544~3347511713",
+			"initializeForTesting": true
+		}
+	}
+}
