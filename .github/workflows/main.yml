@@ -1,54 +1,53 @@
-name: Build Android APK
+name: Build Android App
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch: # Isse aap button dabakar bhi build shuru kar sakte hain
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Install Android SDK command-line tools
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Assets
+        run: npm run build
+
+      - name: FORCE Create Android Project
+        # Ye line magic karegi: Purane folder ko hatakar bilkul naya banayegi
+        # Taaki koi error na aaye
         run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-latest.zip
-          unzip cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest || true
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-      - name: Cache node_modules
-        uses: actions/cache@v4
+          rm -rf android
+          npm install @capacitor/android
+          npx cap add android
+          npx cap sync
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          path: |
-            node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install dependencies
-        run: npm ci
-      - name: Build web assets
-        run: npm run build --if-present
-      - name: Capacitor sync
-        run: npx cap sync android
-      - name: Build Android APK (Debug)
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
         with:
-          name: app-debug-apk
+          name: Cyber-Chess-App
           path: android/app/build/outputs/apk/debug/app-debug.apk
